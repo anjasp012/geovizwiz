@@ -68,7 +68,7 @@ function getMapPoint(e: MouseEvent): maplibregl.Point {
 // Pan tool mouse handlers - just for cursor management
 function handlePanMouseDown(e: MouseEvent) {
   if (!isPanToolActive || e.button !== 0) return;
-  
+
   isPanning = true;
   map.getCanvas().style.cursor = 'grabbing';
 }
@@ -79,7 +79,7 @@ function handlePanMouseMove(_e: MouseEvent) {
 
 function handlePanMouseUp(_e: MouseEvent) {
   if (!isPanToolActive || !isPanning) return;
-  
+
   isPanning = false;
   map.getCanvas().style.cursor = 'grab';
 }
@@ -311,33 +311,33 @@ rectangleElement = createRectangleElement();
 function handleRectangleMouseDown(e: MouseEvent) {
   // Only activate if we're in rectangle selection mode
   if (currentSelectionMode !== 'select-rectangle') return;
-  
+
   // Only activate on left click (select only), shift+left click (add), or alt+left click (remove)
   if (e.button !== 0) return;
-  
+
   // Prevent default behavior
   e.preventDefault();
   e.stopPropagation();
-  
+
   // Determine mode based on modifier keys
   const isAddMode = e.shiftKey && !e.altKey;
   const isRemoveMode = e.altKey && !e.shiftKey;
   const isSelectOnlyMode = !e.shiftKey && !e.altKey;
-  
+
   // Start rectangle selection/unselection
   if (isRemoveMode) {
     isRectangleUnselecting = true;
   } else {
     isRectangleSelecting = true;
   }
-  
+
   // Store start point in viewport coordinates for visual positioning
   rectangleStartPoint = getViewportPoint(e);
-  
+
   // Temporarily disable map drag pan
   originalDragPan = map.dragPan.isEnabled();
   map.dragPan.disable();
-  
+
   // Show rectangle element with appropriate styling
   if (rectangleElement) {
     const viewportPoint = getViewportPoint(e);
@@ -346,7 +346,7 @@ function handleRectangleMouseDown(e: MouseEvent) {
     rectangleElement.style.top = `${viewportPoint.y}px`;
     rectangleElement.style.width = '0px';
     rectangleElement.style.height = '0px';
-    
+
     // Apply styling based on mode
     if (isRemoveMode) {
       rectangleElement.classList.add('unselect');
@@ -354,21 +354,21 @@ function handleRectangleMouseDown(e: MouseEvent) {
       rectangleElement.classList.remove('unselect');
     }
   }
-  
+
   // Change cursor to arrow for SELECT mode
   map.getCanvas().style.cursor = 'default';
 }
 
 function handleRectangleMouseMove(e: MouseEvent) {
   if (currentSelectionMode !== 'select-rectangle' || (!isRectangleSelecting && !isRectangleUnselecting) || !rectangleStartPoint || !rectangleElement) return;
-  
+
   // Calculate rectangle dimensions for visual positioning (viewport coordinates)
   const currentViewportPoint = getViewportPoint(e);
   const left = Math.min(rectangleStartPoint.x, currentViewportPoint.x);
   const top = Math.min(rectangleStartPoint.y, currentViewportPoint.y);
   const width = Math.abs(currentViewportPoint.x - rectangleStartPoint.x);
   const height = Math.abs(currentViewportPoint.y - rectangleStartPoint.y);
-  
+
   // Update rectangle element
   rectangleElement.style.left = `${left}px`;
   rectangleElement.style.top = `${top}px`;
@@ -378,22 +378,22 @@ function handleRectangleMouseMove(e: MouseEvent) {
 
 function handleRectangleMouseUp(e: MouseEvent) {
   if (currentSelectionMode !== 'select-rectangle' || (!isRectangleSelecting && !isRectangleUnselecting) || !rectangleStartPoint || !rectangleElement) return;
-  
+
   // Get current point in viewport coordinates
   const currentViewportPoint = getViewportPoint(e);
-  
+
   // Calculate rectangle dimensions in viewport coordinates
   const viewportLeft = Math.min(rectangleStartPoint.x, currentViewportPoint.x);
   const viewportTop = Math.min(rectangleStartPoint.y, currentViewportPoint.y);
   const viewportWidth = Math.abs(currentViewportPoint.x - rectangleStartPoint.x);
   const viewportHeight = Math.abs(currentViewportPoint.y - rectangleStartPoint.y);
-  
+
   // Only process if rectangle has meaningful size
   if (viewportWidth > 5 && viewportHeight > 5) {
     // Convert viewport coordinates to map coordinates for selection logic
     const canvas = map.getCanvas();
     const rect = canvas.getBoundingClientRect();
-    
+
     // Convert viewport coordinates to map container coordinates
     const mapStartPoint = new maplibregl.Point(
       rectangleStartPoint.x - rect.left,
@@ -403,11 +403,11 @@ function handleRectangleMouseUp(e: MouseEvent) {
       currentViewportPoint.x - rect.left,
       currentViewportPoint.y - rect.top
     );
-    
+
     // Convert to geographic coordinates
     const topLeft = map.unproject([mapStartPoint.x, mapStartPoint.y]);
     const bottomRight = map.unproject([mapCurrentPoint.x, mapCurrentPoint.y]);
-    
+
     // Create bounding box
     const bbox: [number, number, number, number] = [
       Math.min(topLeft.lng, bottomRight.lng),
@@ -415,7 +415,7 @@ function handleRectangleMouseUp(e: MouseEvent) {
       Math.max(topLeft.lng, bottomRight.lng),
       Math.max(topLeft.lat, bottomRight.lat)
     ];
-    
+
     // Log coordinates to console
     const mode = isRectangleUnselecting ? 'Unselect' : 'Select';
     console.log(`Rectangle ${mode} Coordinates:`);
@@ -423,7 +423,7 @@ function handleRectangleMouseUp(e: MouseEvent) {
     console.log('Map coordinates (bbox):', bbox);
     console.log('Top-left:', { lng: topLeft.lng, lat: topLeft.lat });
     console.log('Bottom-right:', { lng: bottomRight.lng, lat: bottomRight.lat });
-    
+
     // Handle different selection modes
     if (isRectangleUnselecting) {
       // Remove parcels from selection
@@ -441,18 +441,18 @@ function handleRectangleMouseUp(e: MouseEvent) {
       }
     }
   }
-  
+
   // Clean up
   isRectangleSelecting = false;
   isRectangleUnselecting = false;
   rectangleStartPoint = null;
-  
+
   // Hide rectangle element
   if (rectangleElement) {
     rectangleElement.style.display = 'none';
     rectangleElement.classList.remove('unselect');
   }
-  
+
   // Restore map drag pan
   if (originalDragPan !== undefined) {
     if (originalDragPan) {
@@ -460,7 +460,7 @@ function handleRectangleMouseUp(e: MouseEvent) {
     }
     originalDragPan = undefined;
   }
-  
+
   // Restore cursor
   updateCursor();
 }
@@ -473,31 +473,31 @@ function selectParcelsInBoundingBox(bbox: [number, number, number, number]) {
   }
   const sourceId = getCurrentSourceId();
   if (!sourceId) return;
-  
+
   const [minLng, minLat, maxLng, maxLat] = bbox;
   let selectedCount = 0;
-  
+
   // Check each feature to see if it intersects with the bounding box
   for (const feature of currentGeoJSON.features) {
     if (!feature.geometry || !feature.id) continue;
-    
+
     // Check if the feature's bounding box intersects with our selection box
     if (featureIntersectsBbox(feature, bbox)) {
       const parcelId = getParcelId(feature);
       selectedParcels.add(parcelId);
-      
+
       // Set feature state for highlighting
       map.setFeatureState(
         { source: sourceId, id: feature.id },
         { selected: true }
       );
-      
+
       selectedCount++;
     }
   }
-  
+
   console.log(`Selected ${selectedCount} parcels within the rectangle`);
-  
+
   // Update the selection controls UI
   updateSelectionControls();
 }
@@ -510,35 +510,35 @@ function unselectParcelsInBoundingBox(bbox: [number, number, number, number]) {
   }
   const sourceId = getCurrentSourceId();
   if (!sourceId) return;
-  
+
   const [minLng, minLat, maxLng, maxLat] = bbox;
   let unselectedCount = 0;
-  
+
   // Check each feature to see if it intersects with the bounding box
   for (const feature of currentGeoJSON.features) {
     if (!feature.geometry || !feature.id) continue;
-    
+
     // Check if the feature's bounding box intersects with our selection box
     if (featureIntersectsBbox(feature, bbox)) {
       const parcelId = getParcelId(feature);
-      
+
       // Only unselect if it was previously selected
       if (selectedParcels.has(parcelId)) {
         selectedParcels.delete(parcelId);
-        
+
         // Set feature state to remove highlighting
         map.setFeatureState(
           { source: sourceId, id: feature.id },
           { selected: false }
         );
-        
+
         unselectedCount++;
       }
     }
   }
-  
+
   console.log(`Unselected ${unselectedCount} parcels within the rectangle`);
-  
+
   // Update the selection controls UI
   updateSelectionControls();
 }
@@ -546,22 +546,22 @@ function unselectParcelsInBoundingBox(bbox: [number, number, number, number]) {
 // Helper function to check if a feature intersects with a bounding box
 function featureIntersectsBbox(feature: GeoJSON.Feature, bbox: [number, number, number, number]): boolean {
   const [minLng, minLat, maxLng, maxLat] = bbox;
-  
+
   if (feature.geometry.type === 'Polygon') {
     return polygonIntersectsBbox(feature.geometry.coordinates, bbox);
   } else if (feature.geometry.type === 'MultiPolygon') {
-    return feature.geometry.coordinates.some(polygon => 
+    return feature.geometry.coordinates.some(polygon =>
       polygonIntersectsBbox(polygon, bbox)
     );
   }
-  
+
   return false;
 }
 
 // Helper function to check if a polygon intersects with a bounding box
 function polygonIntersectsBbox(polygon: number[][][], bbox: [number, number, number, number]): boolean {
   const [minLng, minLat, maxLng, maxLat] = bbox;
-  
+
   // Check if any point of the polygon is inside the bbox
   for (const ring of polygon) {
     for (const coord of ring) {
@@ -571,7 +571,7 @@ function polygonIntersectsBbox(polygon: number[][][], bbox: [number, number, num
       }
     }
   }
-  
+
   // Also check if the bbox is completely inside the polygon
   // This handles cases where the selection rectangle is smaller than the polygon
   const bboxCorners = [
@@ -580,13 +580,13 @@ function polygonIntersectsBbox(polygon: number[][][], bbox: [number, number, num
     [maxLng, maxLat],
     [minLng, maxLat]
   ];
-  
+
   for (const corner of bboxCorners) {
     if (pointInPolygon(corner, polygon[0])) {
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -594,16 +594,16 @@ function polygonIntersectsBbox(polygon: number[][][], bbox: [number, number, num
 function pointInPolygon(point: number[], polygon: number[][]): boolean {
   const [x, y] = point;
   let inside = false;
-  
+
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
     const [xi, yi] = polygon[i];
     const [xj, yj] = polygon[j];
-    
+
     if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
       inside = !inside;
     }
   }
-  
+
   return inside;
 }
 
@@ -1335,7 +1335,7 @@ function minimizeSettings() {
   settingsContent.style.display = 'none';
   controlsEl.style.display = 'none';
   minimizePaint();
-  
+
   // Update toolbar button states
   updateToolbarButtonStates();
 }
@@ -1344,7 +1344,7 @@ function showSettings() {
   isSettingsMinimized = false;
   settingsContent.style.display = 'block';
   controlsEl.style.display = 'grid';
-  
+
   // Update toolbar button states
   updateToolbarButtonStates();
 }
@@ -1385,10 +1385,10 @@ function minimizeLegend() {
   legendContent.style.display = 'none';
   floatingLegend.style.display = 'none';
   isLegendVisible = false;
-  
+
   // Update toolbar button states
   updateToolbarButtonStates();
-  
+
   // Update selection controls position
   updateSelectionControlsPosition();
   // Update legend position
@@ -1400,10 +1400,10 @@ function showLegend() {
   isLegendVisible = true;
   legendContent.style.display = 'block';
   floatingLegend.style.display = 'block';
-  
+
   // Update toolbar button states
   updateToolbarButtonStates();
-  
+
   updateFloatingLegend();
   // Update selection controls position
   updateSelectionControlsPosition();
@@ -1422,7 +1422,7 @@ function makeDraggable(element: HTMLElement) {
     const rect = element.getBoundingClientRect();
     dragOffset.x = e.clientX - rect.left;
     dragOffset.y = e.clientY - rect.top;
-    
+
     // Prevent text selection during drag
     e.preventDefault();
     document.body.style.userSelect = 'none';
@@ -1431,22 +1431,22 @@ function makeDraggable(element: HTMLElement) {
 
 function handleMouseMove(e: MouseEvent) {
   if (!isDragging || !dragTarget) return;
-  
+
   const x = e.clientX - dragOffset.x;
   const y = e.clientY - dragOffset.y;
-  
+
   // Keep window within viewport bounds
   const rect = dragTarget.getBoundingClientRect();
   const maxX = window.innerWidth - rect.width;
   const maxY = window.innerHeight - rect.height;
-  
+
   const clampedX = Math.max(0, Math.min(x, maxX));
   const clampedY = Math.max(0, Math.min(y, maxY));
-  
+
   dragTarget.style.left = `${clampedX}px`;
   dragTarget.style.top = `${clampedY}px`;
   dragTarget.style.transform = 'none'; // Remove any transform when dragging
-  
+
   // If dragging the selection controls panel, update legend position
   if (dragTarget.id === 'selectionControlsPanel') {
     updateLegendPosition();
@@ -1563,13 +1563,13 @@ function clearLegendVisibility() {
 
 function updateFloatingLegend() {
   if (!isLegendVisible || !currentGeoJSON) return;
-  
+
   // Clear previous content
   legendContent.replaceChildren();
-  
+
   // Update title to just "Legend"
   legendTitle.textContent = 'Legend';
-  
+
   if (!currentField) {
     // Show "No field selected" message
     const noFieldInfo = document.createElement('div');
@@ -1587,7 +1587,7 @@ function updateFloatingLegend() {
     legendContent.appendChild(noFieldInfo);
     return;
   }
-  
+
   // Add field name and type at the top of the legend content
   const fieldInfo = document.createElement('div');
   fieldInfo.style.cssText = `
@@ -1602,7 +1602,7 @@ function updateFloatingLegend() {
     <div>Type: ${currentFieldType}</div>
   `;
   legendContent.appendChild(fieldInfo);
-  
+
   // Add zoom to selected button on its own row
   const zoomRow = document.createElement('div');
   zoomRow.style.cssText = `
@@ -1612,7 +1612,7 @@ function updateFloatingLegend() {
     margin-bottom: 4px;
     border-bottom: 1px solid #eee;
   `;
-  
+
   const zoomBtn = document.createElement('button');
   zoomBtn.textContent = 'Zoom to selected';
   zoomBtn.title = 'Zoom to bounding box of selected items';
@@ -1624,13 +1624,13 @@ function updateFloatingLegend() {
     padding: 2px 6px;
     border-radius: 3px;
   `;
-  
+
   zoomBtn.onclick = () => {
     if (selectedLegendItems.size === 0) {
       // Show a toast or alert that no items are selected
       return;
     }
-    
+
     // Get the bounding box from the markup layer source
     const markupSource = map.getSource('markup-source') as maplibregl.GeoJSONSource;
     if (markupSource) {
@@ -1645,16 +1645,16 @@ function updateFloatingLegend() {
             Math.max(...bbox.map((coord: number[]) => coord[0])),
             Math.max(...bbox.map((coord: number[]) => coord[1]))
           ];
-          
+
           map.fitBounds(bounds, { padding: 50 });
         }
       }
     }
   };
-  
+
   zoomRow.appendChild(zoomBtn);
   legendContent.appendChild(zoomRow);
-  
+
   // Add header bar with column headers
   const headerBar = document.createElement('div');
   headerBar.style.cssText = `
@@ -1667,7 +1667,7 @@ function updateFloatingLegend() {
     font-size: 12px;
     font-weight: 600;
   `;
-  
+
   // Eye toggle all button
   const eyeAllBtn = document.createElement('button');
   eyeAllBtn.textContent = '👁️';
@@ -1680,7 +1680,7 @@ function updateFloatingLegend() {
     padding: 2px;
     flex-shrink: 0;
   `;
-  
+
   eyeAllBtn.onclick = () => {
     if (currentFieldType === 'categorical') {
       // Toggle all categorical items
@@ -1691,7 +1691,7 @@ function updateFloatingLegend() {
           categories.add(String(value));
         }
       }
-      
+
       const allHidden = Array.from(categories).every(cat => hiddenLegendItems.has(cat));
       if (allHidden) {
         // Show all
@@ -1702,10 +1702,10 @@ function updateFloatingLegend() {
       }
     } else {
       // Toggle all numeric ranges
-      const ranges = colorMode === 'quantiles' && colorBreaks && colorBreaks.length 
-        ? colorBreaks.length + 1 
+      const ranges = colorMode === 'quantiles' && colorBreaks && colorBreaks.length
+        ? colorBreaks.length + 1
         : 10;
-      
+
       const allHidden = Array.from({length: ranges}, (_, i) => `range_${i}`).every(rangeKey => hiddenLegendItems.has(rangeKey));
       if (allHidden) {
         // Show all
@@ -1719,7 +1719,7 @@ function updateFloatingLegend() {
         }
       }
     }
-    
+
     updateFloatingLegend();
     applyExtrusionWithVisibility();
   };
@@ -1766,7 +1766,7 @@ function updateFloatingLegend() {
     margin: 0;
     flex-shrink: 0;
   `;
-  
+
   // Set initial state based on current selections
   if (currentFieldType === 'categorical') {
     const categories = getLegendCategories();
@@ -1777,7 +1777,7 @@ function updateFloatingLegend() {
       : 10;
     checkboxAll.checked = ranges > 0 && Array.from({length: ranges}, (_, i) => `range_${i}`).every(rangeKey => selectedLegendItems.has(rangeKey));
   }
-  
+
   checkboxAll.onchange = () => {
     const sourceId = getCurrentSourceId();
     if (!sourceId) return;
@@ -1788,18 +1788,18 @@ function updateFloatingLegend() {
       const ranges = getLegendRanges();
       ranges.forEach(range => applyRangeSelection(range.key, range, checkboxAll.checked, sourceId));
     }
-    
+
     updateSelectionControls();
     updateFloatingLegend(); // Refresh to update checkbox states
   };
-  
+
   // Add blank space for swatch column
   const swatchSpacer = document.createElement('div');
   swatchSpacer.style.cssText = `
     width: 20px;
     flex-shrink: 0;
   `;
-  
+
   // Add column headers as buttons
   const nameHeader = document.createElement('button');
   nameHeader.textContent = 'Name';
@@ -1817,7 +1817,7 @@ function updateFloatingLegend() {
     transition: all 0.2s ease;
     color: #333;
   `;
-  
+
   const countHeader = document.createElement('button');
   countHeader.textContent = '#';
   countHeader.style.cssText = `
@@ -1882,33 +1882,33 @@ function updateFloatingLegend() {
     countHeader.style.borderColor = '#ccc';
     countHeader.style.transform = 'translateY(0)';
   };
-  
+
   // Update button text to show sort indicators
   const updateSortIndicators = () => {
     nameHeader.textContent = 'Name';
     countHeader.textContent = '#';
-    
+
     if (legendSortField === 'name') {
       nameHeader.textContent += legendSortDirection === 'asc' ? ' ↑' : ' ↓';
     } else if (legendSortField === 'count') {
       countHeader.textContent += legendSortDirection === 'asc' ? ' ↑' : ' ↓';
     }
   };
-  
+
   updateSortIndicators();
-  
+
   headerBar.appendChild(eyeAllBtn);
   headerBar.appendChild(checkboxAll);
   headerBar.appendChild(swatchSpacer);
   headerBar.appendChild(nameHeader);
   headerBar.appendChild(countHeader);
   legendContent.appendChild(headerBar);
-  
+
   // Store references to update sort indicators later
   (legendContent as any)._nameHeader = nameHeader;
   (legendContent as any)._countHeader = countHeader;
   (legendContent as any)._updateSortIndicators = updateSortIndicators;
-  
+
   if (currentFieldType === 'categorical') {
     updateCategoricalFloatingLegend();
   } else {
@@ -1918,7 +1918,7 @@ function updateFloatingLegend() {
 
 function updateCategoricalFloatingLegend() {
   if (!currentField || !currentGeoJSON) return;
-  
+
   // Pre-calculate counts for all categories in a single pass
   const categoryCounts = new Map<string, number>();
   for (const feature of currentGeoJSON.features) {
@@ -1928,9 +1928,9 @@ function updateCategoricalFloatingLegend() {
       categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
     }
   }
-  
+
   let sortedCategories = Array.from(categoryCounts.keys());
-  
+
   // Apply sorting if specified
   if (legendSortField === 'name') {
     sortedCategories.sort((a, b) => {
@@ -1961,7 +1961,7 @@ function updateCategoricalFloatingLegend() {
   if (categoricalColorMode === 'single') {
     fallbackColor = singleColorValue;
   }
-  
+
 
   // Add search bar to legend
   const searchContainer = document.createElement('div');
@@ -1972,7 +1972,7 @@ function updateCategoricalFloatingLegend() {
     margin-bottom: 8px;
     padding: 4px;
   `;
-  
+
   const searchInput = document.createElement('input');
   searchInput.type = 'text';
   searchInput.placeholder = 'Search categories...';
@@ -1983,16 +1983,16 @@ function updateCategoricalFloatingLegend() {
     border-radius: 4px;
     font-size: 12px;
   `;
-  
+
   searchContainer.appendChild(searchInput);
   legendContent.appendChild(searchContainer);
-  
+
   // Create legend items
   sortedCategories.forEach(category => {
     const color = categoryToColor.get(category) || fallbackColor;
     const isHidden = hiddenLegendItems.has(category);
     const count = categoryCounts.get(category) || 0;
-    
+
     const item = document.createElement('div');
     item.setAttribute('data-category', category);
     item.style.cssText = `
@@ -2004,7 +2004,7 @@ function updateCategoricalFloatingLegend() {
       margin-bottom: 2px;
       ${isHidden ? 'opacity: 0.5;' : ''}
     `;
-    
+
     // Color swatch
     const swatch = document.createElement('div');
     swatch.style.cssText = `
@@ -2015,7 +2015,7 @@ function updateCategoricalFloatingLegend() {
       background: ${color};
       flex-shrink: 0;
     `;
-    
+
     // Category label
     const label = document.createElement('div');
     label.style.cssText = `
@@ -2024,7 +2024,7 @@ function updateCategoricalFloatingLegend() {
       word-break: break-word;
     `;
     label.textContent = category;
-    
+
     // Count display
     const countDisplay = document.createElement('div');
     countDisplay.style.cssText = `
@@ -2035,7 +2035,7 @@ function updateCategoricalFloatingLegend() {
       color: #666;
     `;
     countDisplay.textContent = count.toString();
-    
+
      // Eye toggle button
      const eyeBtn = document.createElement('button');
      eyeBtn.textContent = isHidden ? '👁️‍🗨️' : '👁️';
@@ -2048,7 +2048,7 @@ function updateCategoricalFloatingLegend() {
        padding: 2px;
        flex-shrink: 0;
      `;
-     
+
      eyeBtn.onclick = () => {
        if (hiddenLegendItems.has(category)) {
          hiddenLegendItems.delete(category);
@@ -2058,7 +2058,7 @@ function updateCategoricalFloatingLegend() {
        updateFloatingLegend();
        applyExtrusionWithVisibility();
      };
-     
+
      // Selection checkbox
      const checkbox = document.createElement('input');
      checkbox.type = 'checkbox';
@@ -2067,7 +2067,7 @@ function updateCategoricalFloatingLegend() {
        margin: 0;
        flex-shrink: 0;
      `;
-     
+
      checkbox.onchange = () => {
        const sourceId = getCurrentSourceId();
        if (!sourceId) return;
@@ -2075,11 +2075,11 @@ function updateCategoricalFloatingLegend() {
        updateSelectionControls();
        updateFloatingLegend(); // Refresh to update header checkbox state
      };
-     
+
      // Make swatch clickable for color picker
      swatch.style.cursor = 'pointer';
      swatch.onclick = () => openSwatchColorPicker(category, color, swatch);
-     
+
      item.appendChild(eyeBtn);
      item.appendChild(checkbox);
      item.appendChild(swatch);
@@ -2087,12 +2087,12 @@ function updateCategoricalFloatingLegend() {
      item.appendChild(countDisplay);
      legendContent.appendChild(item);
   });
-  
+
   // Update sort indicators
   if ((legendContent as any)._updateSortIndicators) {
     (legendContent as any)._updateSortIndicators();
   }
-  
+
   // Add search functionality
   const filterCategories = (searchText: string) => {
     const items = legendContent.querySelectorAll('[data-category]');
@@ -2102,20 +2102,20 @@ function updateCategoricalFloatingLegend() {
       (item as HTMLElement).style.display = matches ? 'flex' : 'none';
     });
   };
-  
+
   searchInput.addEventListener('input', (e) => {
     const target = e.target as HTMLInputElement;
     filterCategories(target.value);
   });
-  
+
 }
 
 function updateNumericFloatingLegend() {
   if (!currentField || !currentGeoJSON || !currentStats) return;
-  
+
   const ranges = buildNumericColorRanges();
   if (ranges.length === 0) return;
-  
+
   // Convert ranges to the format expected by the legend
   const legendRanges: { min: number; max: number; color: string; label: string; rangeKey: string }[] = ranges.map(range => ({
     min: range.min,
@@ -2124,7 +2124,7 @@ function updateNumericFloatingLegend() {
     label: `${fmt(range.min)} - ${fmt(range.max)}`,
     rangeKey: range.rangeKey
   }));
-  
+
   // Pre-calculate counts for all ranges in a single pass
   const rangeCounts = new Map<string, number>();
   for (const feature of currentGeoJSON!.features) {
@@ -2144,14 +2144,14 @@ function updateNumericFloatingLegend() {
       }
     }
   }
-  
+
   // Create array of range data with counts for sorting
   const rangeData = legendRanges.map((range, index) => {
     const rangeKey = range.rangeKey;
     const count = rangeCounts.get(rangeKey) || 0;
     return { range, index, rangeKey, count };
   });
-  
+
   // Apply sorting if specified
   if (legendSortField === 'name') {
     rangeData.sort((a, b) => {
@@ -2165,7 +2165,7 @@ function updateNumericFloatingLegend() {
       return legendSortDirection === 'asc' ? comparison : -comparison;
     });
   }
-  
+
   // Add search bar to legend
   const searchContainer = document.createElement('div');
   searchContainer.style.cssText = `
@@ -2175,11 +2175,11 @@ function updateNumericFloatingLegend() {
     margin-bottom: 8px;
     padding: 4px;
   `;
-  
+
   const searchLabel = document.createElement('span');
   searchLabel.textContent = 'Find:';
   searchLabel.style.cssText = 'font-size: 12px;';
-  
+
   const searchInput = document.createElement('input');
   searchInput.type = 'text';
   searchInput.placeholder = 'Search ranges...';
@@ -2190,7 +2190,7 @@ function updateNumericFloatingLegend() {
     border-radius: 4px;
     font-size: 12px;
   `;
-  
+
   const clearButton = document.createElement('button');
   clearButton.textContent = 'Clear';
   clearButton.style.cssText = `
@@ -2201,19 +2201,19 @@ function updateNumericFloatingLegend() {
     cursor: pointer;
     font-size: 12px;
   `;
-  
+
   searchContainer.appendChild(searchLabel);
   searchContainer.appendChild(searchInput);
   searchContainer.appendChild(clearButton);
   legendContent.appendChild(searchContainer);
-  
+
   // Create legend items
   rangeData.forEach(({ range, index, rangeKey, count }) => {
     const isHidden = hiddenLegendItems.has(rangeKey);
-    
+
     // Color is already applied from the inner function
     const color = range.color;
-    
+
     const item = document.createElement('div');
     item.setAttribute('data-range', range.label);
     item.style.cssText = `
@@ -2225,7 +2225,7 @@ function updateNumericFloatingLegend() {
       margin-bottom: 2px;
       ${isHidden ? 'opacity: 0.5;' : ''}
     `;
-    
+
     // Color swatch
     const swatch = document.createElement('div');
     swatch.style.cssText = `
@@ -2236,7 +2236,7 @@ function updateNumericFloatingLegend() {
       background: ${color};
       flex-shrink: 0;
     `;
-    
+
     // Range label
     const label = document.createElement('div');
     label.style.cssText = `
@@ -2244,7 +2244,7 @@ function updateNumericFloatingLegend() {
       flex-grow: 1;
     `;
     label.textContent = range.label;
-    
+
     // Count display
     const countDisplay = document.createElement('div');
     countDisplay.style.cssText = `
@@ -2255,7 +2255,7 @@ function updateNumericFloatingLegend() {
       color: #666;
     `;
     countDisplay.textContent = count.toString();
-    
+
          // Eye toggle button
      const eyeBtn = document.createElement('button');
      eyeBtn.textContent = isHidden ? '👁️‍🗨️' : '👁️';
@@ -2268,7 +2268,7 @@ function updateNumericFloatingLegend() {
        padding: 2px;
        flex-shrink: 0;
      `;
-     
+
      eyeBtn.onclick = () => {
        if (hiddenLegendItems.has(rangeKey)) {
          hiddenLegendItems.delete(rangeKey);
@@ -2278,7 +2278,7 @@ function updateNumericFloatingLegend() {
        updateFloatingLegend();
        applyExtrusionWithVisibility();
      };
-     
+
      // Selection checkbox
      const checkbox = document.createElement('input');
      checkbox.type = 'checkbox';
@@ -2287,7 +2287,7 @@ function updateNumericFloatingLegend() {
        margin: 0;
        flex-shrink: 0;
      `;
-     
+
      checkbox.onchange = () => {
        const sourceId = getCurrentSourceId();
        if (!sourceId) return;
@@ -2295,11 +2295,11 @@ function updateNumericFloatingLegend() {
        updateSelectionControls();
        updateFloatingLegend(); // Refresh to update header checkbox state
      };
-     
+
      // Make swatch clickable for color picker
      swatch.style.cursor = 'pointer';
      swatch.onclick = () => openSwatchColorPicker(rangeKey, color, swatch);
-     
+
      item.appendChild(eyeBtn);
      item.appendChild(checkbox);
      item.appendChild(swatch);
@@ -2307,12 +2307,12 @@ function updateNumericFloatingLegend() {
      item.appendChild(countDisplay);
      legendContent.appendChild(item);
   });
-  
+
   // Update sort indicators
   if ((legendContent as any)._updateSortIndicators) {
     (legendContent as any)._updateSortIndicators();
   }
-  
+
   // Add search functionality
   const filterRanges = (searchText: string) => {
     const items = legendContent.querySelectorAll('[data-range]');
@@ -2322,12 +2322,12 @@ function updateNumericFloatingLegend() {
       (item as HTMLElement).style.display = matches ? 'flex' : 'none';
     });
   };
-  
+
   searchInput.addEventListener('input', (e) => {
     const target = e.target as HTMLInputElement;
     filterRanges(target.value);
   });
-  
+
   clearButton.addEventListener('click', () => {
     searchInput.value = '';
     filterRanges('');
@@ -2348,34 +2348,34 @@ function openSwatchColorPicker(itemKey: string, currentColor: string, swatchElem
     opacity: 0;
     pointer-events: none;
   `;
-  
+
   // Position the color picker over the swatch using fixed positioning
   const rect = swatchElement.getBoundingClientRect();
   colorInput.style.left = `${rect.left}px`;
   colorInput.style.top = `${rect.top}px`;
   colorInput.style.width = `${rect.width}px`;
   colorInput.style.height = `${rect.height}px`;
-  
+
   document.body.appendChild(colorInput);
-  
+
   colorInput.addEventListener('change', () => {
     const newColor = colorInput.value;
     customColors.set(itemKey, newColor);
-    
+
     // Update the visualization
     applyExtrusionWithCustomColors();
     updateFloatingLegend();
-    
+
     document.body.removeChild(colorInput);
   });
-  
+
   colorInput.addEventListener('blur', () => {
     // If user cancels, remove the input
     if (document.body.contains(colorInput)) {
       document.body.removeChild(colorInput);
     }
   });
-  
+
   // Trigger the color picker
   colorInput.click();
 }
@@ -2384,19 +2384,19 @@ function applyExtrusionWithCustomColors() {
   if (!currentGeoJSON || !currentField) return;
   const ids = getCurrentLayerIds();
   if (!ids) return;
-  
+
   // If we have custom colors, we need to rebuild the color expression
   if (customColors.size > 0) {
     let colorExpr: any;
-    
+
     if (currentFieldType === 'categorical') {
       colorExpr = buildCategoricalColorExpression();
     } else {
       colorExpr = buildNumericColorExpression();
     }
-    
+
     map.setPaintProperty(ids.layerId, 'fill-extrusion-color', colorExpr);
-    
+
     // Apply height and opacity for numeric fields
     if (currentFieldType === 'numeric') {
       const rawMult = Number(multInput.value);
@@ -2404,12 +2404,12 @@ function applyExtrusionWithCustomColors() {
       const unitFactor = UNIT_TO_METERS[unitsSelect.value as keyof typeof UNIT_TO_METERS] ?? 1;
       const valueExpr = buildValueExpression();
       const heightExpr: any = is3DMode ? ['*', valueExpr, multiplier * unitFactor] : 0;
-      
+
       map.setPaintProperty(ids.layerId, 'fill-extrusion-height', heightExpr);
     } else {
       map.setPaintProperty(ids.layerId, 'fill-extrusion-height', 0);
     }
-    
+
     map.setPaintProperty(ids.layerId, 'fill-extrusion-opacity', parseFloat(opacityInput.value));
   } else {
     // No custom colors, use normal extrusion
@@ -2424,7 +2424,7 @@ function applyVisibilityFilters() {
   // Apply visibility filters if any items are hidden
   if (hiddenLegendItems.size > 0) {
     let filter: any[] = ['all'];
-    
+
     if (currentFieldType === 'categorical') {
       // Hide specific categories
       const hiddenCategories = Array.from(hiddenLegendItems);
@@ -2434,7 +2434,7 @@ function applyVisibilityFilters() {
     } else {
       // For numeric fields, hide specific ranges
       if (!currentStats) return;
-      
+
       const ranges: { min: number; max: number }[] = [];
       if (colorMode === 'quantiles' && colorBreaks && colorBreaks.length) {
         const breaks = [currentStats.min, ...colorBreaks, currentStats.max];
@@ -2452,7 +2452,7 @@ function applyVisibilityFilters() {
           });
         }
       }
-      
+
       // Create conditions to hide ranges
       hiddenLegendItems.forEach(rangeKey => {
         const index = parseInt(rangeKey.split('_')[1]);
@@ -2465,7 +2465,7 @@ function applyVisibilityFilters() {
         }
       });
     }
-    
+
     // Apply the filter to the layer
     if (filter.length > 1) {
       map.setFilter(ids.layerId, filter as any);
@@ -2478,7 +2478,7 @@ function applyVisibilityFilters() {
 
 function applyExtrusionWithVisibility() {
   if (!currentGeoJSON || !currentField) return;
-  
+
   // Use custom colors if available, otherwise normal extrusion
   if (customColors.size > 0) {
     applyExtrusionWithCustomColors();
@@ -2585,7 +2585,7 @@ function minimalBoundingPolygon(
     properties: { algorithm: 'monotone_chain' }
   };
 }
-  
+
 
 // New parcel selection system functions
 function getParcelId(feature: any): string {
@@ -2686,13 +2686,13 @@ function createSelectionControlsPanel() {
   // Create new panel
   selectionControlsPanel = document.createElement('div');
   selectionControlsPanel.id = 'selectionControlsPanel';
-  
+
   // Check if legend is visible and adjust positioning
   const legendVisible = floatingLegend && floatingLegend.style.display !== 'none';
   const legendWidth = legendVisible ? 280 : 0; // Legend max-width is 280px
   const legendRight = 20; // Legend right margin
   const panelRight = legendVisible ? (legendWidth + legendRight + 10) : 20; // Add 10px gap
-  
+
   selectionControlsPanel.style.cssText = `
     position: absolute;
     top: 60px;
@@ -2746,7 +2746,7 @@ function createSelectionControlsPanel() {
   const colorPicker = selectionControlsPanel.querySelector('#highlightColorPicker') as HTMLInputElement;
 
   unselectAllBtn.addEventListener('click', clearAllSelections);
-  
+
   colorPicker.addEventListener('change', (e) => {
     const target = e.target as HTMLInputElement;
     highlightColor = target.value;
@@ -2756,10 +2756,10 @@ function createSelectionControlsPanel() {
 
   // Add to document
   document.body.appendChild(selectionControlsPanel);
-  
+
   // Make the panel draggable
   makeDraggable(selectionControlsPanel);
-  
+
   // Update legend position to be below the panel
   updateLegendPosition();
 }
@@ -2779,23 +2779,23 @@ function updateHighlightColors() {
 
 function updateSelectionControlsPosition() {
   if (!selectionControlsPanel) return;
-  
+
   const legendVisible = floatingLegend && floatingLegend.style.display !== 'none';
   const legendWidth = legendVisible ? 280 : 0;
   const legendRight = 20;
   const panelRight = legendVisible ? (legendWidth + legendRight + 10) : 20;
-  
+
   selectionControlsPanel.style.right = `${panelRight}px`;
 }
 
 function updateLegendPosition() {
   if (!floatingLegend || !selectionControlsPanel) return;
-  
+
   // Position legend below the selection controls panel
   const panelRect = selectionControlsPanel.getBoundingClientRect();
   const panelBottom = panelRect.bottom;
   const legendTop = panelBottom + 10; // 10px gap
-  
+
   floatingLegend.style.top = `${legendTop}px`;
 }
 
@@ -3005,9 +3005,9 @@ function autoPickMainField(fields: string[]): string {
 
 /* ---------------- Modal 1: Numeric field chooser ---------------- */
 
-function openNumericFieldChooserModal(opts: { 
-  rowCount: number; 
-  geometryCol: string; 
+function openNumericFieldChooserModal(opts: {
+  rowCount: number;
+  geometryCol: string;
   numericFields: string[];
 }) {
   rowCountEl.textContent = opts.rowCount.toLocaleString();
@@ -3025,13 +3025,13 @@ function openNumericFieldChooserModal(opts: {
   const lCandidatesKey = keyNumeric.filter(n => containsKeyword(n, 'land') && containsUnit(n));
   const bBest = autoPickOne('building', bCandidatesKey).field;
   const lBest = autoPickOne('land', lCandidatesKey).field;
-   
+
   // Normalize for robust comparisons
   const bSet = new Set(bCandidatesKey.map(s => s.toLowerCase()));
   const lSet = new Set(lCandidatesKey.map(s => s.toLowerCase()));
   const bBestLC = bBest?.toLowerCase() ?? '';
   const lBestLC = lBest?.toLowerCase() ?? '';
-   
+
   // Helper: should a KEY numeric field be prechecked?
   const shouldPrecheckKey = (name: string) => {
     const n = name.toLowerCase();
@@ -3047,11 +3047,11 @@ function openNumericFieldChooserModal(opts: {
     numericFieldListEl.appendChild(p);
   } else {
     if (keyNumeric.length) {
-      const t2 = document.createElement('div'); 
-      t2.className = 'section-subtitle'; 
+      const t2 = document.createElement('div');
+      t2.className = 'section-subtitle';
       t2.textContent = 'Suggested key fields';
       numericFieldListEl.appendChild(t2);
-      const g = document.createElement('div'); 
+      const g = document.createElement('div');
       g.className = 'fieldlist';
       for (const name of keyNumeric) g.appendChild(makeFieldCheckbox(name, shouldPrecheckKey(name), 'numeric'));
       numericFieldListEl.appendChild(g);
@@ -3059,11 +3059,11 @@ function openNumericFieldChooserModal(opts: {
     }
 
     if (otherNumeric.length) {
-      const t2 = document.createElement('div'); 
-      t2.className = 'section-subtitle'; 
+      const t2 = document.createElement('div');
+      t2.className = 'section-subtitle';
       t2.textContent = 'Other numeric fields';
       numericFieldListEl.appendChild(t2);
-      const g = document.createElement('div'); 
+      const g = document.createElement('div');
       g.className = 'fieldlist';
       for (const name of otherNumeric) g.appendChild(makeFieldCheckbox(name, false, 'numeric'));
       numericFieldListEl.appendChild(g);
@@ -3081,20 +3081,20 @@ function openNumericFieldChooserModal(opts: {
   btnConfirmNumericModal.onclick = () => {
     const allCheckboxes = numericFieldListEl.querySelectorAll<HTMLInputElement>('input[type=checkbox]');
     chosenNumericFields = [];
-    
+
     allCheckboxes.forEach(c => {
       if (c.checked) {
         chosenNumericFields.push(c.name);
       }
     });
-    
+
     numericModalOverlay.classList.remove('show');
-    
+
     // If there are categorical fields available, show that modal next
     if (lastCategoricalFieldsFromSchema.length > 0) {
-      openCategoricalFieldChooserModal({ 
-        rowCount: Number(rowCountEl.textContent?.replace(/,/g, '') || '0'), 
-        geometryCol: geomColEl.textContent || 'geometry', 
+      openCategoricalFieldChooserModal({
+        rowCount: Number(rowCountEl.textContent?.replace(/,/g, '') || '0'),
+        geometryCol: geomColEl.textContent || 'geometry',
         categoricalFields: lastCategoricalFieldsFromSchema
       });
     } else {
@@ -3113,9 +3113,9 @@ function openNumericFieldChooserModal(opts: {
 
 /* ---------------- Modal 2: Categorical field chooser ---------------- */
 
-function openCategoricalFieldChooserModal(opts: { 
-  rowCount: number; 
-  geometryCol: string; 
+function openCategoricalFieldChooserModal(opts: {
+  rowCount: number;
+  geometryCol: string;
   categoricalFields: string[];
 }) {
   categoricalRowCountEl.textContent = opts.rowCount.toLocaleString();
@@ -3130,7 +3130,7 @@ function openCategoricalFieldChooserModal(opts: {
     p.className = 'muted';
     categoricalFieldListEl.appendChild(p);
   } else {
-    const g = document.createElement('div'); 
+    const g = document.createElement('div');
     g.className = 'fieldlist';
     for (const name of allCategorical) g.appendChild(makeFieldCheckbox(name, false, 'categorical'));
     categoricalFieldListEl.appendChild(g);
@@ -3147,36 +3147,36 @@ function openCategoricalFieldChooserModal(opts: {
   btnConfirmCategoricalModal.onclick = () => {
     const allCheckboxes = categoricalFieldListEl.querySelectorAll<HTMLInputElement>('input[type=checkbox]');
     chosenCategoricalFields = [];
-    
+
     allCheckboxes.forEach(c => {
       if (c.checked) {
         chosenCategoricalFields.push(c.name);
       }
     });
-    
+
     // Check if at least one field is selected (either numeric or categorical)
     if (chosenNumericFields.length === 0 && chosenCategoricalFields.length === 0) {
       alert('Please select at least one field (numeric or categorical).');
       categoricalModalOverlay.classList.add('show');
       return;
     }
-    
+
     categoricalModalOverlay.classList.remove('show');
     openSizeModal();
   };
-  
+
   // Add a "Back" button to return to numeric modal
   const backButton = document.createElement('button');
   backButton.textContent = 'Back to Numeric Fields';
   backButton.onclick = () => {
     categoricalModalOverlay.classList.remove('show');
-    openNumericFieldChooserModal({ 
-      rowCount: Number(categoricalRowCountEl.textContent?.replace(/,/g, '') || '0'), 
-      geometryCol: categoricalGeomColEl.textContent || 'geometry', 
+    openNumericFieldChooserModal({
+      rowCount: Number(categoricalRowCountEl.textContent?.replace(/,/g, '') || '0'),
+      geometryCol: categoricalGeomColEl.textContent || 'geometry',
       numericFields: lastNumericFieldsFromSchema
     });
   };
-  
+
   // Insert back button before the footer
   const footer = categoricalModalOverlay.querySelector('.footer');
   if (footer) {
@@ -3214,7 +3214,7 @@ function openSizeModal() {
   fillFieldSelect(landFieldSel, chosenNumericFields);
   fillUnitSelect(bldgUnitSel);
   fillUnitSelect(landUnitSel);
-  
+
   // --- AUTO-PICK using heuristic ---
   const bGuess = autoPickOne('building', chosenNumericFields);
   const lGuess = autoPickOne('land', chosenNumericFields);
@@ -3239,19 +3239,19 @@ function openSizeModal() {
     if (g) landUnitSel.value = g;
   };
 
-  btnSizeBack.onclick = () => { 
-    sizeOverlay.classList.remove('show'); 
+  btnSizeBack.onclick = () => {
+    sizeOverlay.classList.remove('show');
     // Go back to the appropriate modal based on what was shown
     if (lastCategoricalFieldsFromSchema.length > 0) {
-      openCategoricalFieldChooserModal({ 
-        rowCount: Number(categoricalRowCountEl.textContent?.replace(/,/g, '') || '0'), 
-        geometryCol: categoricalGeomColEl.textContent || 'geometry', 
+      openCategoricalFieldChooserModal({
+        rowCount: Number(categoricalRowCountEl.textContent?.replace(/,/g, '') || '0'),
+        geometryCol: categoricalGeomColEl.textContent || 'geometry',
         categoricalFields: lastCategoricalFieldsFromSchema
       });
     } else {
-      openNumericFieldChooserModal({ 
-        rowCount: Number(rowCountEl.textContent?.replace(/,/g, '') || '0'), 
-        geometryCol: geomColEl.textContent || 'geometry', 
+      openNumericFieldChooserModal({
+        rowCount: Number(rowCountEl.textContent?.replace(/,/g, '') || '0'),
+        geometryCol: geomColEl.textContent || 'geometry',
         numericFields: lastNumericFieldsFromSchema
       });
     }
@@ -3334,10 +3334,10 @@ async function loadSelectedColumns() {
     sanitizeFeaturesInPlace(features);
 
     const keep = new Set<string>([
-      'id','ID','fid','FID','name','NAME', 
-      ...chosenNumericFields, 
+      'id','ID','fid','FID','name','NAME',
+      ...chosenNumericFields,
       ...chosenCategoricalFields,
-      bldgSizeField || '', 
+      bldgSizeField || '',
       landSizeField || ''
     ]);
     trimPropertiesInPlace(features, keep);
@@ -3378,7 +3378,7 @@ async function loadSelectedColumns() {
     const availableNumeric = chosenNumericFields.filter(k => {
       return features.some(f => f?.properties?.hasOwnProperty(k));
     });
-    
+
     const availableCategorical = chosenCategoricalFields.filter(k => {
       return features.some(f => f?.properties?.hasOwnProperty(k));
     });
@@ -3496,14 +3496,14 @@ function addExtrusionLayer(layer: LayerState) {
     if (currentLayerId !== layer.id) {
       setCurrentLayer(layer.id);
     }
-    
+
     // Handle info tool
     if (isInfoToolActive) {
       const props = (f.properties || {}) as Record<string, any>;
       showPopup(props, e.lngLat);
       return;
     }
-    
+
     // Handle selection tools
     if (currentSelectionMode === 'select-one') {
       // Handle different click modes
@@ -3520,7 +3520,7 @@ function addExtrusionLayer(layer: LayerState) {
       }
     }
   });
-  
+
   // Right-click to close popup
   map.on('contextmenu', layer.layerId, (e) => {
     if (activePopup) {
@@ -3529,16 +3529,16 @@ function addExtrusionLayer(layer: LayerState) {
       lastPicked = null;
     }
   });
-  
-  map.on('mouseenter', layer.layerId, () => { 
+
+  map.on('mouseenter', layer.layerId, () => {
     if (isInfoToolActive) {
       map.getCanvas().style.cursor = 'pointer';
     }
   });
-  map.on('mouseleave', layer.layerId, () => { 
+  map.on('mouseleave', layer.layerId, () => {
     updateCursor();
   });
-  
+
   // Keyboard event handling
   if (!keyHandlersInstalled) {
     document.addEventListener('keydown', (e) => {
@@ -3548,7 +3548,7 @@ function addExtrusionLayer(layer: LayerState) {
         activePopup = null;
         lastPicked = null;
       }
-      
+
       // Hotkey handling
       const key = e.key.toLowerCase();
       if (key === HOTKEYS.PAN) {
@@ -3564,14 +3564,14 @@ function addExtrusionLayer(layer: LayerState) {
     });
     keyHandlersInstalled = true;
   }
-  
+
   ensureErrorLayer(layer);
 }
 
 function showPopup(props: Record<string, any>, lngLat: maplibregl.LngLatLike) {
   // Only show popup if info tool is active
   if (!isInfoToolActive) return;
-  
+
   if (activePopup) activePopup.remove();
   activePopup = new maplibregl.Popup({
     closeButton: true,
@@ -3582,7 +3582,7 @@ function showPopup(props: Record<string, any>, lngLat: maplibregl.LngLatLike) {
     .setHTML(buildPopupHTML(props))
     .addTo(map);
   lastPicked = { props, lngLat };
-  
+
   // Add search functionality to the popup
   addPopupSearchFunctionality();
 }
@@ -3593,7 +3593,7 @@ function addPopupSearchFunctionality() {
     if (popupElement) {
       const searchInput = popupElement.querySelector('#popupSearch') as HTMLInputElement;
       const tableBody = popupElement.querySelector('#popupFieldsTable') as HTMLTableSectionElement;
-      
+
       if (searchInput && tableBody) {
         const filterFields = (searchText: string) => {
           const rows = tableBody.querySelectorAll('tr');
@@ -3606,7 +3606,7 @@ function addPopupSearchFunctionality() {
             }
           });
         };
-        
+
         searchInput.addEventListener('input', (e) => {
           const target = e.target as HTMLInputElement;
           filterFields(target.value);
@@ -3649,15 +3649,15 @@ function applyGrayRendering() {
   if (!currentGeoJSON) return;
   const ids = getCurrentLayerIds();
   if (!ids) return;
-  
+
   // Apply gray color and no extrusion when no field is selected
   map.setPaintProperty(ids.layerId, 'fill-extrusion-color', '#888');
   map.setPaintProperty(ids.layerId, 'fill-extrusion-height', 0);
   map.setPaintProperty(ids.layerId, 'fill-extrusion-opacity', parseFloat(opacityInput.value));
-  
+
   // Clear any filters
   map.setFilter(ids.layerId, null);
-  
+
   // refresh which features are flagged as erroneous for current mode
   updateErrorLayer();
 
@@ -3671,7 +3671,7 @@ function applyExtrusion() {
   if (!currentGeoJSON) return;
   const ids = getCurrentLayerIds();
   if (!ids) return;
-  
+
   // If no field is selected, apply gray rendering
   if (!currentField) {
     applyGrayRendering();
@@ -3681,7 +3681,7 @@ function applyExtrusion() {
   if (currentFieldType === 'categorical') {
     // For categorical fields, no extrusion - just color
     const colorExpr = buildCategoricalColorExpression();
-    
+
     map.setPaintProperty(ids.layerId, 'fill-extrusion-color', colorExpr);
     map.setPaintProperty(ids.layerId, 'fill-extrusion-height', 0);
     map.setPaintProperty(ids.layerId, 'fill-extrusion-opacity', parseFloat(opacityInput.value));
@@ -3689,7 +3689,7 @@ function applyExtrusion() {
     // For numeric fields, use the new color expression builder
     const colorExpr = buildNumericColorExpression();
     const valueExpr = buildValueExpression();
-    
+
     const rawMult = Number(multInput.value);
     const multiplier = Number.isFinite(rawMult) ? rawMult : 0;
     const unitFactor = UNIT_TO_METERS[unitsSelect.value as keyof typeof UNIT_TO_METERS] ?? 1;
@@ -3792,8 +3792,8 @@ function generatePseudoRandomColor(n: number, max_n: number, seed: string): stri
   const h = frac(hOffset + (idx + 0.5) / max_n);
 
   // Keep colors vivid: high S, mid/high L with tiny seed+index jitter for variety
-  const s = 0.45 + 0.10 * rand01(hash, idx, 0xA8F1);         
-  const l = 0.56 + 0.16 * (rand01(hash, idx, 0xC0FFEE) - 0.5); 
+  const s = 0.45 + 0.10 * rand01(hash, idx, 0xA8F1);
+  const l = 0.56 + 0.16 * (rand01(hash, idx, 0xC0FFEE) - 0.5);
 
   const [r, g, b] = hslToRgb(h, s, l);
   return `rgb(${r}, ${g}, ${b})`;
@@ -3802,7 +3802,7 @@ function generatePseudoRandomColor(n: number, max_n: number, seed: string): stri
 
 function buildCategoricalColorPairs(): Array<[string, string]> {
   if (!currentField || !currentGeoJSON) return [];
-  
+
   // Collect unique categories
   const categories = new Set<string>();
   for (const feature of currentGeoJSON.features) {
@@ -3811,15 +3811,15 @@ function buildCategoricalColorPairs(): Array<[string, string]> {
       categories.add(String(value));
     }
   }
-  
+
   const sortedCategories = Array.from(categories).sort();
-  
+
   if (sortedCategories.length === 0) {
     return [];
   }
-  
+
   const pairs: Array<[string, string]> = [];
-  
+
   if (categoricalColorMode === 'single') {
     // Single color mode: map empty string to the single color
     pairs.push(['', singleColorValue]);
@@ -3827,7 +3827,7 @@ function buildCategoricalColorPairs(): Array<[string, string]> {
     // Color ramp: sort categories alphabetically and assign colors linearly
     const ramp = COLOR_RAMPS[rampSelect.value] || COLOR_RAMPS['Viridis'];
     const denom = Math.max(1, sortedCategories.length - 1);
-    
+
     for (let i = 0; i < sortedCategories.length; i++) {
       const category = sortedCategories[i];
       const colorIndex = Math.round((i / denom) * (ramp.length - 1));
@@ -3842,20 +3842,20 @@ function buildCategoricalColorPairs(): Array<[string, string]> {
       pairs.push([category, color]);
     }
   }
-  
+
   // Apply custom colors if they exist
   const finalPairs: any[] = [];
   for (const [category, defaultColor] of pairs) {
     const color = customColors.has(category) ? customColors.get(category)! : defaultColor;
     finalPairs.push([category, color]);
   }
-  
+
   return finalPairs;
 }
 
 function buildCategoricalColorExpression(): Expression {
   if (!currentField || !currentGeoJSON) return ['literal', '#888'] as any;
-  
+
   // Get the base color pairs from the inner function
   const pairs = buildCategoricalColorPairs();
   // flatten pairs into an array of strings
@@ -3880,13 +3880,13 @@ function buildCategoricalColorExpression(): Expression {
     ['==', val, ''], fallbackColor,
     ['match', val, ...flattenedPairs, fallbackColor]
   ] as any;
-  
+
   // Add highlighting for selected parcels
   const result = ['case',
     ['boolean', ['feature-state', 'selected'], false], highlightColor,
     baseResult
   ] as any;
-  
+
   return result;
 }
 
@@ -3968,7 +3968,7 @@ function scheduleUpdate(mode: UpdateMode, refreshLegend = false, debounceMs = 80
     if (_pendingRefreshLegend) {
       clearLegendVisibility();
     }
-    
+
     if (_pendingMode === 'recomputeAndAutoScale') {
       computeAndApplyAutoMultiplier('auto', HEIGHT_CAP_METERS, HEIGHT_PCTL);
       if (_pendingRefreshLegend) {
@@ -4108,7 +4108,7 @@ function computeAndApplyAutoMultiplier(
     let hi = Number.isFinite(pHigh) ? pHigh : 1;
     if (!(hi > lo)) { lo = 0; hi = 1; }
     colorDomain = { lo, hi, label: 'p1–p99' };
-   
+
     // build equal-interval thresholds: colors => k classes => k-1 breaks
     const classes = Math.max(2, ramp.length);
     const step = (hi - lo) / classes;
@@ -4211,7 +4211,7 @@ function buildPopupHTML(props: Record<string, any>): string {
     normalizationMode === 'perBuilding' ? `per ${bldgSizeField || 'building size'}` :
     'as-is';
 
-  const metricRow = currentFieldType === 'categorical' 
+  const metricRow = currentFieldType === 'categorical'
     ? `<div><strong>Category</strong>: ${currentField ? (props[currentField] ?? '—') : '—'}</div>`
     : (metric != null)
       ? `<div><strong>Display metric (${modeLabel})</strong>: ${fmt(metric)}</div>`
@@ -4234,7 +4234,7 @@ function buildPopupHTML(props: Record<string, any>): string {
       ${metricRow}
       ${heightRow}
 	  ${errRow}
-      ${is3DMode && currentFieldType === 'numeric' ? 
+      ${is3DMode && currentFieldType === 'numeric' ?
         `<div style="margin-top:6px; font-size:12px; color:#666">
           Multiplier × unit: ${fmt(Number(multInput.value))} × ${unitKey}
         </div>` : ''}
@@ -4274,21 +4274,21 @@ function update3DUI() {
 
 function computeAndSetGoodExtrusionDefaults() {
   if (!currentGeoJSON || !currentField || currentFieldType !== 'numeric') return;
-  
+
   const vals = getNumericValuesNormalized(currentGeoJSON, currentField, normalizationMode);
   if (vals.length === 0) return;
-  
+
   // Sort values and get p99
   vals.sort((a, b) => a - b);
   const p99 = vals[Math.floor(vals.length * 0.99)];
-  
+
   // Use existing function to choose best unit and multiplier
   const { unit, multiplier } = chooseBestMetricUnitForMultiplier(p99);
-  
+
   // Set the values
   multInput.value = String(multiplier);
   unitsSelect.value = unit;
-  
+
   // Cache the settings
   cachedExtrusionSettings = { multiplier, unit };
 }
@@ -4296,7 +4296,7 @@ function computeAndSetGoodExtrusionDefaults() {
 function updateFieldTypeUI() {
   const numericOptions = document.getElementById('numericOptions');
   const categoricalOptions = document.getElementById('categoricalOptions');
-  
+
   if (!currentField) {
     // Hide all options when no field is selected
     if (numericOptions) numericOptions.style.display = 'none';
@@ -4307,7 +4307,7 @@ function updateFieldTypeUI() {
   } else {
     // Show shared options when a field is selected
     if (sharedOptions) sharedOptions.style.display = 'grid';
-    
+
     if (currentFieldType === 'numeric') {
       if (numericOptions) numericOptions.style.display = 'grid';
       if (categoricalOptions) categoricalOptions.style.display = 'none';
@@ -4318,13 +4318,13 @@ function updateFieldTypeUI() {
       if (categoricalOptions) categoricalOptions.style.display = 'grid';
       if (colorOptions) colorOptions.style.display = 'none';
       extrusionOptions.style.display = 'none';
-      
+
       // Show/hide color options based on selected mode
       if (colorOptions) {
         colorOptions.style.display = categoricalColorMode === 'single' ? 'block' : 'none';
       }
     }
-	
+
 	// Show/hide color ramp widget based on categorical color mode
 	const rampContainer = rampSelect.parentElement?.parentElement;
 	if (rampContainer) {
@@ -4438,7 +4438,7 @@ fileInput.addEventListener('change', async () => {
 // Auto-load default dataset
 async function autoLoadDefaultDataset() {
   try {
-    const response = await fetch('/data/babakan_ciparay.parquet');
+    const response = await fetch('./data/babakan_ciparay.parquet');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const blob = await response.blob();
@@ -4474,23 +4474,23 @@ window.addEventListener('load', () => {
 // Categorical color mode event listeners
 document.querySelectorAll<HTMLInputElement>('input[name="categoricalColorMode"]').forEach(el =>
   el.addEventListener('change', () => {
-    
+
     if (!currentGeoJSON || currentFieldType !== 'categorical') return;
     const val = (document.querySelector('input[name="categoricalColorMode"]:checked') as HTMLInputElement)?.value;
     if (val === 'random' || val === 'single' || val === 'colorRamp') {
       categoricalColorMode = val;
-      
+
       // Show/hide color options
       if (colorOptions) {
         colorOptions.style.display = categoricalColorMode === 'single' ? 'block' : 'none';
       }
-      
+
       // Show/hide color ramp widget based on categorical color mode
       const rampContainer = rampSelect.parentElement?.parentElement;
       if (rampContainer) {
         rampContainer.style.display = (categoricalColorMode === 'colorRamp' || currentFieldType !== 'categorical') ? 'block' : 'none';
       }
-      
+
       scheduleUpdate('applyOnly', /*refreshLegend*/ true);
       persistCurrentLayerState();
     }
@@ -4505,7 +4505,7 @@ btnCancelColorPicker.addEventListener('click', () => {
 
 btnConfirmColorPicker.addEventListener('click', () => {
   singleColorValue = colorPicker.value;
-  
+
   // Update the map if we're currently using single color mode
   if (currentFieldType === 'categorical' && categoricalColorMode === 'single') {
     scheduleUpdate('applyOnly', /*refreshLegend*/ true);
@@ -4585,7 +4585,7 @@ opacityInput.addEventListener('input', () => {
 fieldSelect.addEventListener('change', () => {
   currentField = fieldSelect.value || null;
   if (!currentGeoJSON) return;
-  
+
   if (!currentField) {
     // No field selected - apply gray rendering
     currentFieldType = null;
@@ -4600,17 +4600,17 @@ fieldSelect.addEventListener('change', () => {
     persistCurrentLayerState();
     return;
   }
-  
+
   // Determine field type
   if (chosenNumericFields.includes(currentField)) {
     currentFieldType = 'numeric';
   } else if (chosenCategoricalFields.includes(currentField)) {
     currentFieldType = 'categorical';
   }
-  
+
   // Update UI based on field type
   updateFieldTypeUI();
-  
+
   // Ensure categorical color mode is properly set if switching to categorical
   if (currentFieldType === 'categorical') {
     // Make sure the radio button is checked
@@ -4619,14 +4619,14 @@ fieldSelect.addEventListener('change', () => {
       radioButton.checked = true;
     }
   }
-  
+
   // Clear legend selections when field changes, but preserve parcel selections
   selectedLegendItems.clear();
   // Note: selectedParcels is preserved so highlighting continues to work
-  
+
   // Clear cached extrusion settings when field changes
   cachedExtrusionSettings = null;
-  
+
   // Reset to default sorting state when field changes
   if (currentFieldType === 'categorical') {
     legendSortField = 'name';
@@ -4634,11 +4634,11 @@ fieldSelect.addEventListener('change', () => {
     legendSortField = 'count';
   }
   legendSortDirection = 'desc';
-  
+
   if (map.getLayer('markup-layer')) map.removeLayer('markup-layer');
   if (map.getLayer('markup-layer-outline')) map.removeLayer('markup-layer-outline');
   if (map.getSource('markup-source')) map.removeSource('markup-source');
-  
+
   scheduleUpdate('recomputeAndAutoScale', /*refreshLegend*/ true);
   persistCurrentLayerState();
 });
@@ -4658,7 +4658,7 @@ document.querySelectorAll<HTMLInputElement>('input[name="normMode"]').forEach(r 
 enable3DCheckbox.addEventListener('change', () => {
   is3DMode = enable3DCheckbox.checked;
   update3DUI();
-  
+
   if (is3DMode && !cachedExtrusionSettings) {
     // First time enabling 3D - compute good defaults
     computeAndSetGoodExtrusionDefaults();
@@ -4667,7 +4667,7 @@ enable3DCheckbox.addEventListener('change', () => {
     multInput.value = String(cachedExtrusionSettings.multiplier);
     unitsSelect.value = cachedExtrusionSettings.unit;
   }
-  
+
   // Apply the current visualization
   if (currentGeoJSON && currentField) {
     applyExtrusion();
@@ -4690,10 +4690,10 @@ renderDataStoreList();
 
 function buildNumericColorRanges(): Array<{ min: number; max: number; color: string; rangeKey: string }> {
   if (!currentField || !currentGeoJSON || !currentStats) return [];
-  
+
   const ramp = COLOR_RAMPS[rampSelect.value] || COLOR_RAMPS['Viridis'];
   let ranges: Array<{ min: number; max: number; color: string; rangeKey: string }> = [];
-  
+
   if (colorMode === 'quantiles' && colorBreaks && colorBreaks.length) {
     // Use quantile breaks for ranges
     const breaks = [currentStats.min, ...colorBreaks, currentStats.max];
@@ -4710,7 +4710,7 @@ function buildNumericColorRanges(): Array<{ min: number; max: number; color: str
     const min = currentStats.min;
     const max = currentStats.max;
     const step = (max - min) / 10;
-    
+
     for (let i = 0; i < 10; i++) {
       const rangeMin = min + (step * i);
       const rangeMax = i === 9 ? max : min + (step * (i + 1));
@@ -4721,23 +4721,23 @@ function buildNumericColorRanges(): Array<{ min: number; max: number; color: str
       ranges.push({ min: rangeMin, max: rangeMax, color, rangeKey });
     }
   }
-  
+
   return ranges;
 }
 
 function buildNumericColorExpression(): Expression {
   if (!currentField || !currentGeoJSON || !currentStats) return ['literal', '#888'] as any;
-  
+
   const ranges = buildNumericColorRanges();
   if (ranges.length === 0) {
     return ['literal', '#888'] as any;
   }
-  
+
   const valueExpr = buildValueExpression();
-  
+
   // Build a step expression with the ranges
   const cases: any[] = ['case'];
-  
+
   for (let i = 0; i < ranges.length; i++) {
     const range = ranges[i];
     if (i === ranges.length - 1) {
@@ -4753,17 +4753,17 @@ function buildNumericColorExpression(): Expression {
       ], ['literal', range.color]);
     }
   }
-  
+
   // Default color
   cases.push(['literal', '#888']);
-  
+
   // Add highlighting for selected parcels
   const baseResult = cases as any;
   const result = ['case',
     ['boolean', ['feature-state', 'selected'], false], highlightColor,
     baseResult
   ] as any;
-  
+
   return result;
 }
 
@@ -4825,12 +4825,12 @@ function activateTool(tool: 'pan' | 'info' | 'select') {
   // Deactivate all tools first
   isPanToolActive = false;
   isInfoToolActive = false;
-  
+
   // Remove active-tool class from all buttons
   panToolButton.classList.remove('active-tool');
   infoToolButton.classList.remove('active-tool');
   selectToolButton.classList.remove('active-tool');
-  
+
   // Activate the specified tool
   switch (tool) {
     case 'pan':
@@ -4851,13 +4851,13 @@ function activateTool(tool: 'pan' | 'info' | 'select') {
       map.dragPan.disable();
       break;
   }
-  
+
   // Update selection mode handlers
   setupSelectionModeHandlers();
-  
+
   // Update cursor
   updateCursor();
-  
+
   // Close popup if info tool is deactivated
   if (!isInfoToolActive && activePopup) {
     activePopup.remove();
@@ -4872,17 +4872,17 @@ function handleSubmenuButtonClick(mode: string) {
   updateToolbarIcon();
   updateSubmenuActiveStates();
   selectSubmenu.classList.remove('show');
-  
+
   // Activate select tool
   activateTool('select');
-  
+
   console.log(`Selection mode changed to: ${mode}`);
 }
 
 // Set up event handlers based on current selection mode
 function setupSelectionModeHandlers() {
   const mapContainer = map.getContainer();
-  
+
   // Remove all existing mouse event listeners
   mapContainer.removeEventListener('mousedown', handleRectangleMouseDown);
   mapContainer.removeEventListener('mousemove', handleRectangleMouseMove);
@@ -4896,7 +4896,7 @@ function setupSelectionModeHandlers() {
   mapContainer.removeEventListener('mousedown', handlePanMouseDown);
   mapContainer.removeEventListener('mousemove', handlePanMouseMove);
   mapContainer.removeEventListener('mouseup', handlePanMouseUp);
-  
+
   // Add pan tool event listeners if pan tool is active
   if (isPanToolActive) {
     mapContainer.addEventListener('mousedown', handlePanMouseDown);
@@ -4904,12 +4904,12 @@ function setupSelectionModeHandlers() {
     mapContainer.addEventListener('mouseup', handlePanMouseUp);
     return;
   }
-  
+
   // If info tool is active, don't add any selection event listeners
   if (isInfoToolActive) {
     return;
   }
-  
+
   // Add event listeners based on current mode
   switch (currentSelectionMode) {
     case 'select-rectangle':
@@ -4944,26 +4944,26 @@ function initializeToolbar() {
   // Set initial state
   updateToolbarIcon();
   updateSubmenuActiveStates();
-  
+
   // Set initial button states based on window visibility
   updateToolbarButtonStates();
-  
+
   // Activate pan tool by default
   activateTool('pan');
-  
+
   // Set up initial selection mode handlers
   setupSelectionModeHandlers();
-  
+
   // Set initial cursor state
   updateCursor();
-  
+
   // Handle main select button click and hold behavior
   let selectButtonHoldTimer: number | null = null;
   let selectButtonHoldDuration = 200; // milliseconds to hold before showing submenu
 
   selectToolButton.addEventListener('mousedown', (e) => {
     e.stopPropagation();
-    
+
     // Start hold timer
     selectButtonHoldTimer = window.setTimeout(() => {
       selectSubmenu.classList.add('show');
@@ -4973,12 +4973,12 @@ function initializeToolbar() {
 
   selectToolButton.addEventListener('mouseup', (e) => {
     e.stopPropagation();
-    
+
     // If timer is still running, it was a quick click - toggle current option
     if (selectButtonHoldTimer) {
       clearTimeout(selectButtonHoldTimer);
       selectButtonHoldTimer = null;
-      
+
       // Toggle the current selection mode
       const currentButton = selectSubmenu.querySelector(`[data-mode="${currentSelectionMode}"]`) as HTMLButtonElement;
       if (currentButton) {
@@ -4996,7 +4996,7 @@ function initializeToolbar() {
       selectButtonHoldTimer = null;
     }
   });
-  
+
   // Handle settings button click
   settingsToolButton.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -5007,12 +5007,12 @@ function initializeToolbar() {
       minimizeSettings();
     }
   });
-  
+
   // Handle pan button click
   panToolButton.addEventListener('click', (e) => {
     e.stopPropagation();
     closeAllSubmenus();
-    
+
     if (isPanToolActive) {
       // If pan is already active, deactivate it
       activateTool('select');
@@ -5021,12 +5021,12 @@ function initializeToolbar() {
       activateTool('pan');
     }
   });
-  
+
   // Handle info button click
   infoToolButton.addEventListener('click', (e) => {
     e.stopPropagation();
     closeAllSubmenus();
-    
+
     if (isInfoToolActive) {
       // If info is already active, deactivate it
       activateTool('select');
@@ -5035,7 +5035,7 @@ function initializeToolbar() {
       activateTool('info');
     }
   });
-  
+
   // Handle legend button click
   legendToolButton.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -5046,7 +5046,7 @@ function initializeToolbar() {
       minimizeLegend();
     }
   });
-  
+
   // Handle submenu button clicks
   submenuButtons.forEach(button => {
     button.addEventListener('click', (e) => {
@@ -5059,7 +5059,7 @@ function initializeToolbar() {
       }
     });
   });
-  
+
   // Close submenu when clicking outside
   document.addEventListener('click', (e) => {
     if (!selectToolButton.contains(e.target as Node) && !selectSubmenu.contains(e.target as Node)) {
@@ -5078,7 +5078,7 @@ function updateToolbarButtonStates() {
     settingsToolButton.classList.remove('inactive');
     settingsToolButton.classList.add('active');
   }
-  
+
   // Legend button state
   if (isLegendMinimized) {
     legendToolButton.classList.add('inactive');
@@ -5121,7 +5121,7 @@ function createLassoElement(): HTMLDivElement {
     width: 100%;
     height: 100%;
   `;
-  
+
   // Create SVG for lasso path
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.style.cssText = `
@@ -5132,25 +5132,25 @@ function createLassoElement(): HTMLDivElement {
     height: 100%;
     pointer-events: none;
   `;
-  
+
   // Create fill path (for the colored background)
   const fillPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   fillPath.setAttribute('class', 'lasso-fill');
-  
+
   // Create background path (for the white dashes)
   const bgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   bgPath.setAttribute('class', 'lasso-path-bg select');
-  
+
   // Create foreground path (for the black/red dashes)
   const fgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   fgPath.setAttribute('class', 'lasso-path select');
-  
+
   svg.appendChild(fillPath);
   svg.appendChild(bgPath);
   svg.appendChild(fgPath);
   lasso.appendChild(svg);
   document.body.appendChild(lasso);
-  
+
   return lasso;
 }
 
@@ -5163,39 +5163,39 @@ lassoPath = lassoElement.querySelector('.lasso-path') as SVGPathElement;
 function handleLassoMouseDown(e: MouseEvent) {
   // Only activate on left click (select only), shift+left click (add), or alt+left click (remove)
   if (e.button !== 0) return;
-  
+
   // Prevent default behavior
   e.preventDefault();
   e.stopPropagation();
-  
+
   // Determine mode based on modifier keys
   const isAddMode = e.shiftKey && !e.altKey;
   const isRemoveMode = e.altKey && !e.shiftKey;
   const isSelectOnlyMode = !e.shiftKey && !e.altKey;
-  
+
   // Start lasso selection/unselection
   if (isRemoveMode) {
     isLassoUnselecting = true;
   } else {
     isLassoSelecting = true;
   }
-  
+
   // Initialize lasso points (viewport coordinates for visual positioning)
   lassoPoints = [getViewportPoint(e)];
-  
+
   // Temporarily disable map drag pan
   originalDragPan = map.dragPan.isEnabled();
   map.dragPan.disable();
-  
+
   // Show lasso element
   if (lassoElement) {
     lassoElement.style.display = 'block';
-    
+
     // Get all path elements
     const fillPath = lassoElement.querySelector('.lasso-fill') as SVGPathElement;
     const bgPath = lassoElement.querySelector('.lasso-path-bg') as SVGPathElement;
     const fgPath = lassoElement.querySelector('.lasso-path') as SVGPathElement;
-    
+
     // Apply styling based on mode
     if (isRemoveMode) {
       fillPath?.setAttribute('class', 'lasso-fill unselect');
@@ -5207,18 +5207,18 @@ function handleLassoMouseDown(e: MouseEvent) {
       fgPath?.setAttribute('class', 'lasso-path select');
     }
   }
-  
+
   // Change cursor to arrow for SELECT mode
   map.getCanvas().style.cursor = 'default';
 }
 
 function handleLassoMouseMove(e: MouseEvent) {
   if ((!isLassoSelecting && !isLassoUnselecting) || !lassoElement) return;
-  
+
   // Sample points every 5 pixels to avoid too many points (viewport coordinates for visual positioning)
   const currentPoint = getViewportPoint(e);
   const lastPoint = lassoPoints[lassoPoints.length - 1];
-  
+
   if (currentPoint.dist(lastPoint) >= 5) {
     lassoPoints.push(currentPoint);
     updateLassoPath();
@@ -5227,26 +5227,26 @@ function handleLassoMouseMove(e: MouseEvent) {
 
 function updateLassoPath() {
   if (!lassoElement || lassoPoints.length < 2) return;
-  
+
   // Get all path elements
   const fillPath = lassoElement.querySelector('.lasso-fill') as SVGPathElement;
   const bgPath = lassoElement.querySelector('.lasso-path-bg') as SVGPathElement;
   const fgPath = lassoElement.querySelector('.lasso-path') as SVGPathElement;
-  
+
   if (!fillPath || !bgPath || !fgPath) return;
-  
+
   // Build SVG path
   let pathData = `M ${lassoPoints[0].x} ${lassoPoints[0].y}`;
-  
+
   for (let i = 1; i < lassoPoints.length; i++) {
     pathData += ` L ${lassoPoints[i].x} ${lassoPoints[i].y}`;
   }
-  
+
   // Close the path by connecting to the first point
   if (lassoPoints.length > 2) {
     pathData += ` Z`;
   }
-  
+
   // Update all three paths with the same path data
   fillPath.setAttribute('d', pathData);
   bgPath.setAttribute('d', pathData);
@@ -5255,12 +5255,12 @@ function updateLassoPath() {
 
 function handleLassoMouseUp(e: MouseEvent) {
   if ((!isLassoSelecting && !isLassoUnselecting) || !lassoElement) return;
-  
+
   // Close the lasso by adding the first point again if we have enough points
   if (lassoPoints.length >= 3) {
     lassoPoints.push(lassoPoints[0]);
     updateLassoPath();
-    
+
     // Convert viewport coordinates to map coordinates for selection logic
     const mapCoordinates = lassoPoints.map(point => {
       // Convert viewport coordinates to map container coordinates first
@@ -5272,14 +5272,14 @@ function handleLassoMouseUp(e: MouseEvent) {
       );
       return map.unproject([mapPoint.x, mapPoint.y]);
     });
-    
+
     // Create a polygon from the coordinates
     const polygon = mapCoordinates.map(coord => [coord.lng, coord.lat]);
-    
+
     // Log coordinates to console
     const mode = isLassoUnselecting ? 'Unselect' : 'Select';
     console.log(`Lasso ${mode} Coordinates:`, polygon);
-    
+
     // Handle different selection modes
     if (isLassoUnselecting) {
       // Remove parcels from selection
@@ -5295,17 +5295,17 @@ function handleLassoMouseUp(e: MouseEvent) {
       selectParcelsInPolygon(polygon);
     }
   }
-  
+
   // Clean up
   isLassoSelecting = false;
   isLassoUnselecting = false;
   lassoPoints = [];
-  
+
   // Hide lasso element
   if (lassoElement) {
     lassoElement.style.display = 'none';
   }
-  
+
   // Restore map drag pan
   if (originalDragPan !== undefined) {
     if (originalDragPan) {
@@ -5313,7 +5313,7 @@ function handleLassoMouseUp(e: MouseEvent) {
     }
     originalDragPan = undefined;
   }
-  
+
   // Restore cursor
   updateCursor();
 }
@@ -5326,41 +5326,41 @@ function selectParcelsInPolygon(polygon: number[][]) {
   }
   const sourceId = getCurrentSourceId();
   if (!sourceId) return;
-  
+
   // Calculate bounding box for the lasso polygon
   const bbox = calculatePolygonBbox(polygon);
-  
+
   let selectedCount = 0;
-  
+
   // First, filter features by bounding box intersection (broad-phase collision detection)
   const candidateFeatures = currentGeoJSON.features.filter(feature => {
     if (!feature.geometry || !feature.id) return false;
     return featureIntersectsBbox(feature, bbox);
   });
-  
+
   console.log(`Broad-phase filtering: ${candidateFeatures.length} features out of ${currentGeoJSON.features.length} candidates`);
-  
+
   // Then, perform detailed polygon intersection checks only on the filtered subset
   for (const feature of candidateFeatures) {
     if (!feature.geometry || !feature.id) continue;
-    
+
     // Check if the feature intersects with our lasso polygon
     if (featureIntersectsPolygon(feature, polygon)) {
       const parcelId = getParcelId(feature);
       selectedParcels.add(parcelId);
-      
+
       // Set feature state for highlighting
       map.setFeatureState(
         { source: sourceId, id: feature.id },
         { selected: true }
       );
-      
+
       selectedCount++;
     }
   }
-  
+
   console.log(`Selected ${selectedCount} parcels within the lasso`);
-  
+
   // Update the selection controls UI
   updateSelectionControls();
 }
@@ -5373,45 +5373,45 @@ function unselectParcelsInPolygon(polygon: number[][]) {
   }
   const sourceId = getCurrentSourceId();
   if (!sourceId) return;
-  
+
   // Calculate bounding box for the lasso polygon
   const bbox = calculatePolygonBbox(polygon);
-  
+
   let unselectedCount = 0;
-  
+
   // First, filter features by bounding box intersection (broad-phase collision detection)
   const candidateFeatures = currentGeoJSON.features.filter(feature => {
     if (!feature.geometry || !feature.id) return false;
     return featureIntersectsBbox(feature, bbox);
   });
-  
+
   console.log(`Broad-phase filtering: ${candidateFeatures.length} features out of ${currentGeoJSON.features.length} candidates`);
-  
+
   // Then, perform detailed polygon intersection checks only on the filtered subset
   for (const feature of candidateFeatures) {
     if (!feature.geometry || !feature.id) continue;
-    
+
     // Check if the feature intersects with our lasso polygon
     if (featureIntersectsPolygon(feature, polygon)) {
       const parcelId = getParcelId(feature);
-      
+
       // Only unselect if it was previously selected
       if (selectedParcels.has(parcelId)) {
         selectedParcels.delete(parcelId);
-        
+
         // Set feature state to remove highlighting
         map.setFeatureState(
           { source: sourceId, id: feature.id },
           { selected: false }
         );
-        
+
         unselectedCount++;
       }
     }
   }
-  
+
   console.log(`Unselected ${unselectedCount} parcels within the lasso`);
-  
+
   // Update the selection controls UI
   updateSelectionControls();
 }
@@ -5421,11 +5421,11 @@ function featureIntersectsPolygon(feature: GeoJSON.Feature, polygon: number[][])
   if (feature.geometry.type === 'Polygon') {
     return polygonIntersectsPolygon(feature.geometry.coordinates, polygon);
   } else if (feature.geometry.type === 'MultiPolygon') {
-    return feature.geometry.coordinates.some(poly => 
+    return feature.geometry.coordinates.some(poly =>
       polygonIntersectsPolygon(poly, polygon)
     );
   }
-  
+
   return false;
 }
 
@@ -5440,7 +5440,7 @@ function polygonIntersectsPolygon(polygon1: number[][][], polygon2: number[][]):
       }
     }
   }
-  
+
   // Also check if any point of polygon2 is inside polygon1
   for (const coord of polygon2) {
     const [lng, lat] = coord;
@@ -5448,7 +5448,7 @@ function polygonIntersectsPolygon(polygon1: number[][][], polygon2: number[][]):
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -5458,7 +5458,7 @@ function calculatePolygonBbox(polygon: number[][]): [number, number, number, num
   let minLat = Infinity;
   let maxLng = -Infinity;
   let maxLat = -Infinity;
-  
+
   for (const coord of polygon) {
     const [lng, lat] = coord;
     minLng = Math.min(minLng, lng);
@@ -5466,7 +5466,7 @@ function calculatePolygonBbox(polygon: number[][]): [number, number, number, num
     maxLng = Math.max(maxLng, lng);
     maxLat = Math.max(maxLat, lat);
   }
-  
+
   return [minLng, minLat, maxLng, maxLat];
 }
 
@@ -5498,7 +5498,7 @@ function createPolygonElement(): HTMLDivElement {
     width: 100%;
     height: 100%;
   `;
-  
+
   // Create SVG for polygon path
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.style.cssText = `
@@ -5509,32 +5509,32 @@ function createPolygonElement(): HTMLDivElement {
     height: 100%;
     pointer-events: none;
   `;
-  
+
   // Create fill path (for the colored background)
   const fillPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   fillPath.setAttribute('class', 'polygon-fill');
-  
+
   // Create background path (for the white dashes)
   const bgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   bgPath.setAttribute('class', 'polygon-path-bg select');
-  
+
   // Create foreground path (for the black/red dashes)
   const fgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   fgPath.setAttribute('class', 'polygon-path select');
-  
+
   // Create closing indicator circle
   const closingIndicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   closingIndicator.setAttribute('class', 'polygon-closing-indicator');
   closingIndicator.setAttribute('r', '8'); // Slightly bigger than the 10px close detection radius
   closingIndicator.style.display = 'none';
-  
+
   svg.appendChild(fillPath);
   svg.appendChild(bgPath);
   svg.appendChild(fgPath);
   svg.appendChild(closingIndicator);
   polygon.appendChild(svg);
   document.body.appendChild(polygon);
-  
+
   return polygon;
 }
 
@@ -5547,22 +5547,22 @@ polygonPath = polygonElement.querySelector('.polygon-path') as SVGPathElement;
 function handlePolygonMouseDown(e: MouseEvent) {
   // Only activate on left click (select only), shift+left click (add), or alt+left click (remove)
   if (e.button !== 0) return;
-  
+
   // Prevent default behavior
   e.preventDefault();
   e.stopPropagation();
-  
+
   // Determine mode based on modifier keys
   const isAddMode = e.shiftKey && !e.altKey;
   const isRemoveMode = e.altKey && !e.shiftKey;
   const isSelectOnlyMode = !e.shiftKey && !e.altKey;
   const currentPoint = getViewportPoint(e);
-  
+
   // If this is the first click, start polygon selection
   if (polygonPoints.length === 0) {
     isPolygonSelecting = !isRemoveMode;
     isPolygonUnselecting = isRemoveMode;
-    
+
     // Store the selection mode
     if (isRemoveMode) {
       polygonSelectionMode = 'remove';
@@ -5571,23 +5571,23 @@ function handlePolygonMouseDown(e: MouseEvent) {
     } else {
       polygonSelectionMode = 'select-only';
     }
-    
+
     polygonStartPoint = currentPoint;
     polygonPoints = [currentPoint];
-    
+
     // Temporarily disable map drag pan
     originalDragPan = map.dragPan.isEnabled();
     map.dragPan.disable();
-    
+
     // Show polygon element
     if (polygonElement) {
       polygonElement.style.display = 'block';
-      
+
       // Get all path elements
       const fillPath = polygonElement.querySelector('.polygon-fill') as SVGPathElement;
       const bgPath = polygonElement.querySelector('.polygon-path-bg') as SVGPathElement;
       const fgPath = polygonElement.querySelector('.polygon-path') as SVGPathElement;
-      
+
       // Apply styling based on mode
       if (isRemoveMode) {
         fillPath?.setAttribute('class', 'polygon-fill unselect');
@@ -5599,7 +5599,7 @@ function handlePolygonMouseDown(e: MouseEvent) {
         fgPath?.setAttribute('class', 'polygon-path select');
       }
     }
-    
+
     // Change cursor to arrow for SELECT mode
     map.getCanvas().style.cursor = 'default';
   } else {
@@ -5616,9 +5616,9 @@ function handlePolygonMouseDown(e: MouseEvent) {
 
 function handlePolygonMouseMove(e: MouseEvent) {
   if ((!isPolygonSelecting && !isPolygonUnselecting) || !polygonElement || polygonPoints.length === 0) return;
-  
+
   const currentPoint = getViewportPoint(e);
-  
+
   // Check if we're near the start point for closing indication
   if (polygonStartPoint && currentPoint.dist(polygonStartPoint) <= 10) {
     if (!isPolygonClosing) {
@@ -5643,39 +5643,39 @@ function handlePolygonMouseMove(e: MouseEvent) {
       }
     }
   }
-  
+
   // Update the path to show line from last point to current mouse position
   updatePolygonPath(currentPoint);
 }
 
 function updatePolygonPath(currentMousePoint?: maplibregl.Point) {
   if (!polygonElement || polygonPoints.length === 0) return;
-  
+
   // Get all path elements
   const fillPath = polygonElement.querySelector('.polygon-fill') as SVGPathElement;
   const bgPath = polygonElement.querySelector('.polygon-path-bg') as SVGPathElement;
   const fgPath = polygonElement.querySelector('.polygon-path') as SVGPathElement;
-  
+
   if (!fillPath || !bgPath || !fgPath) return;
-  
+
   // Build SVG path
   let pathData = `M ${polygonPoints[0].x} ${polygonPoints[0].y}`;
-  
+
   // Add lines between committed points
   for (let i = 1; i < polygonPoints.length; i++) {
     pathData += ` L ${polygonPoints[i].x} ${polygonPoints[i].y}`;
   }
-  
+
   // Add line from last committed point to current mouse position
   if (currentMousePoint && polygonPoints.length > 0) {
     pathData += ` L ${currentMousePoint.x} ${currentMousePoint.y}`;
   }
-  
+
   // Close the path if we have enough points
   if (polygonPoints.length >= 3) {
     pathData += ` Z`;
   }
-  
+
   // Update all three paths with the same path data
   fillPath.setAttribute('d', pathData);
   bgPath.setAttribute('d', pathData);
@@ -5684,18 +5684,18 @@ function updatePolygonPath(currentMousePoint?: maplibregl.Point) {
 
 function handlePolygonDoubleClick(e: MouseEvent) {
   if ((!isPolygonSelecting && !isPolygonUnselecting) || polygonPoints.length < 3) return;
-  
+
   // Prevent default behavior
   e.preventDefault();
   e.stopPropagation();
-  
+
   // Close the polygon
   closePolygon();
 }
 
 function closePolygon() {
   if ((!isPolygonSelecting && !isPolygonUnselecting) || !polygonElement || polygonPoints.length < 3) return;
-  
+
   // Convert viewport coordinates to map coordinates for selection logic
   const mapCoordinates = polygonPoints.map(point => {
     // Convert viewport coordinates to map container coordinates first
@@ -5707,14 +5707,14 @@ function closePolygon() {
     );
     return map.unproject([mapPoint.x, mapPoint.y]);
   });
-  
+
   // Create a polygon from the coordinates
   const polygon = mapCoordinates.map(coord => [coord.lng, coord.lat]);
-  
+
   // Log coordinates to console
   const mode = isPolygonUnselecting ? 'Unselect' : 'Select';
   console.log(`Polygon ${mode} Coordinates:`, polygon);
-  
+
   // Handle different selection modes
   if (polygonSelectionMode === 'remove') {
     // Remove parcels from selection
@@ -5727,14 +5727,14 @@ function closePolygon() {
     // Add parcels to selection
     selectParcelsInPolygon(polygon);
   }
-  
+
   // Clean up
   isPolygonSelecting = false;
   isPolygonUnselecting = false;
   polygonPoints = [];
   polygonStartPoint = null;
   isPolygonClosing = false;
-  
+
   // Hide polygon element and closing indicator
   if (polygonElement) {
     polygonElement.style.display = 'none';
@@ -5743,7 +5743,7 @@ function closePolygon() {
       closingIndicator.style.display = 'none';
     }
   }
-  
+
   // Restore map drag pan
   if (originalDragPan !== undefined) {
     if (originalDragPan) {
@@ -5751,7 +5751,7 @@ function closePolygon() {
     }
     originalDragPan = undefined;
   }
-  
+
   // Restore cursor
   updateCursor();
 }
