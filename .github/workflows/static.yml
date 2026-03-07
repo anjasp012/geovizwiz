@@ -35,21 +35,13 @@ jobs:
         working-directory: viz
         run: npm run build
 
-      - name: Prepare deployment directory
-        run: |
-          mkdir staging
-          cp -r site/* staging/
-          cp -r util staging/
-          mkdir -p staging/viz
-          cp -r viz/dist/* staging/viz/
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: staging
+          path: viz/dist
 
   deploy:
     needs: build
