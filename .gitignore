@@ -1,0 +1,13 @@
+viz/dist/
+site/viz
+site/geoconverter
+*.code-workspace
+geoconverter/browser/
+geoconverter/lib/
+local-deploy/*
+
+util/util.zip
+
+viz/package-lock.json
+
+viz/package.json
