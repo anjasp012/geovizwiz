@@ -81,6 +81,11 @@ function startServer(rootDir) {
       // If path is a directory, try index.html
       const stat = await fs.stat(filePath).catch(() => null);
       if (stat && stat.isDirectory()) {
+        if (!reqPath.endsWith("/") && reqPath !== "") {
+          res.writeHead(301, { "Location": reqPath + "/" });
+          res.end();
+          return;
+        }
         filePath = path.join(filePath, "index.html");
       }
 
