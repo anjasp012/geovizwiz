@@ -27,13 +27,20 @@ jobs:
         with:
             node-version: 20
 
-      - name: Install dependencies
-        working-directory: viz
-        run: npm install
+      - name: Create deployment directory
+        run: mkdir -p dist
 
-      - name: Build Vite app
+      - name: Copy landing page and assets
+        run: cp -r site/* dist/
+
+      - name: Copy utility tools
+        run: cp -r util dist/
+
+      - name: Build Viz app
         working-directory: viz
-        run: npm run build
+        run: |
+          npm install
+          npm run build -- --outDir ../dist/viz --emptyOutDir
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -41,7 +48,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: viz/dist
+          path: dist
 
   deploy:
     needs: build
