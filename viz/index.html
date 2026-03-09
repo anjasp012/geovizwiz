@@ -263,19 +263,6 @@
       fill: inherit;
     }
 
-    .toolbar-button.inactive {
-      background: #e5e7eb;
-      border-color: #9ca3af;
-      opacity: 0.7;
-      cursor: default;
-      color: #6b7280;
-    }
-
-    .toolbar-button.inactive:hover {
-      background: #e5e7eb;
-      border-color: #9ca3af;
-    }
-
     .toolbar-button svg {
       width: 16px;
       height: 16px;
@@ -516,7 +503,7 @@
 
 
 
-          <div id="controls" style="position: absolute; top: 10px; left: 60px; width: min(calc(92vw - 80px), 420px); background: var(--panel); border-radius: 12px; box-shadow: var(--shadow); display: grid; gap: var(--gap); z-index: 10; cursor: move;">
+          <div id="controls" style="position: absolute; top: 10px; left: 60px; width: min(calc(92vw - 80px), 420px); background: var(--panel); border-radius: 12px; box-shadow: var(--shadow); display: none; gap: var(--gap); z-index: 10; cursor: move;">
       <div class="window-header" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #eee; background: rgba(248, 248, 248, 0.8); border-radius: 12px 12px 0 0; cursor: move;">
         <div style="font-weight: 600; font-size: 13px;">Settings</div>
         <button id="btnMinimizeSettings" style="border: none; background: none; cursor: pointer; font-size: 14px; color: #666; padding: 2px; width: 20px; height: 20px; border-radius: 3px; display: flex; align-items: center; justify-content: center;" title="Minimize">
@@ -808,7 +795,7 @@
     max-height: 70vh;
     overflow: hidden;
     z-index: 15;
-    display: block;
+    display: none;
     backdrop-filter: blur(4px);
     cursor: move;
   ">

@@ -973,10 +973,10 @@ let _pendingRefreshLegend = false;
 type MetricUnitKey = 'centimeters' | 'meters' | 'kilometers';
 
 // Window state
-let isSettingsMinimized = false;
+let isSettingsMinimized = true;
 let isPaintMinimized = true;
-let isLegendVisible = true;  // Start with legend visible
-let isLegendMinimized = false;
+let isLegendVisible = false;  // Start with legend hidden
+let isLegendMinimized = true;
 let hiddenLegendItems = new Set<string>(); // Track which categories/ranges are hidden
 
 // Selection state
@@ -2855,7 +2855,8 @@ function installWelcome() {
 
 function revealUI() {
     if (welcomeEl) { welcomeEl.remove(); welcomeEl = null; }
-    if (controlsEl) controlsEl.style.display = 'grid';
+    // We no longer force controlsEl.style.display = 'grid' here
+    // User must click the settings button in the toolbar to see it.
 }
 
 function ensureRenderToast() {
@@ -3429,7 +3430,7 @@ async function loadSelectedColumns() {
         updateFieldTypeUI();
         computeAndSetGoodExtrusionDefaults();
         scheduleUpdate('recomputeAndAutoScale', true);
-        showPaint();
+        // showPaint(); // REMOVED: Don't show paint initially
 
         fitToData(currentGeoJSON);
         persistCurrentLayerState();
@@ -5098,19 +5099,15 @@ function initializeToolbar() {
 function updateToolbarButtonStates() {
     // Settings button state
     if (isSettingsMinimized) {
-        settingsToolButton.classList.add('inactive');
         settingsToolButton.classList.remove('active');
     } else {
-        settingsToolButton.classList.remove('inactive');
         settingsToolButton.classList.add('active');
     }
 
     // Legend button state
     if (isLegendMinimized) {
-        legendToolButton.classList.add('inactive');
         legendToolButton.classList.remove('active');
     } else {
-        legendToolButton.classList.remove('inactive');
         legendToolButton.classList.add('active');
     }
 }
