@@ -3851,7 +3851,7 @@ function buildCategoricalColorPairs(): Array<[string, string]> {
         pairs.push(['', singleColorValue]);
     } else if (categoricalColorMode === 'colorRamp') {
         // Color ramp: sort categories alphabetically and assign colors linearly
-        const ramp = COLOR_RAMPS[rampSelect.value] || COLOR_RAMPS['Viridis'];
+        const ramp = COLOR_RAMPS[rampSelect.value] || COLOR_RAMPS['Civic'];
         const denom = Math.max(1, sortedCategories.length - 1);
 
         for (let i = 0; i < sortedCategories.length; i++) {
@@ -4122,12 +4122,12 @@ function computeAndApplyAutoMultiplier(
 
     // ---- Color domain / breaks ----
     if (colorMode === 'quantiles') {
-        const ramp = COLOR_RAMPS[rampSelect.value] || COLOR_RAMPS['Viridis'];
+        const ramp = COLOR_RAMPS[rampSelect.value] || COLOR_RAMPS['Civic'];
         colorBreaks = quantileBreaks(vals, ramp.length, 1, 99); // p1..p99 equal-frequency bins
         colorDomain = null;
     } else {
         // continuous = EQUAL INTERVAL classes across p1..p99
-        const ramp = COLOR_RAMPS[rampSelect.value] || COLOR_RAMPS['Viridis'];
+        const ramp = COLOR_RAMPS[rampSelect.value] || COLOR_RAMPS['Civic'];
         const pLow = percentile(vals, 1);
         const pHigh = percentile(vals, 99);
         let lo = Number.isFinite(pLow) ? pLow : 0;

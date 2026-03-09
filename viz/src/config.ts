@@ -1,27 +1,53 @@
 // Removed unused Expression import
 
-// Map style (Standard OpenStreetMap - Classic Mapnik style utilized by CivicMapper)
+// Map style (Custom Theme - designed to match the green-heavy landscape aesthetic of CivicMapper)
 export const OSM_STYLE: any = {
     version: 8,
     sources: {
         'osm-tiles': {
             type: 'raster',
             tiles: [
-                'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
             ],
             tileSize: 256,
             attribution: '© OpenStreetMap contributors'
+        },
+        'terrain-dem': {
+            type: 'raster-dem',
+            tiles: [
+                'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'
+            ],
+            encoding: 'terrarium',
+            tileSize: 256
         }
     },
     layers: [
         {
+            id: 'background',
+            type: 'background',
+            paint: {
+                'background-color': '#c1e5b2' // More saturated landscape green
+            }
+        },
+        {
             id: 'osm-tiles',
             type: 'raster',
             source: 'osm-tiles',
-            minzoom: 0,
-            maxzoom: 19
+            paint: {
+                'raster-opacity': 0.7, // More transparency for background to show through
+                'raster-saturation': 0.4
+            }
+        },
+        {
+            id: 'hillshade',
+            type: 'hillshade',
+            source: 'terrain-dem',
+            paint: {
+                'hillshade-exaggeration': 0.5,
+                'hillshade-shadow-color': '#5a8c5a',
+                'hillshade-highlight-color': '#ffffff',
+                'hillshade-accent-color': '#2d5a2d'
+            }
         }
     ]
 };
